@@ -8,7 +8,8 @@ A full stack machine learning web app that classifies emails as **spam or ham** 
 
 > Paste any email → click Analyse → get instant prediction with confidence score
 
-![Spam Classifier UI](Screenshot.png)
+<img width="620" height="611" alt="Screenshot" src="https://github.com/user-attachments/assets/2e71beba-2313-4e4e-85eb-624d5af6350b" />
+
 
 ---
 
