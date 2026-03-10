@@ -140,7 +140,7 @@ numpy
 
 ## 👤 Author
 
-Built as part of a Machine Learning internship project.
+Maheen Baloch
 
 ---
 
