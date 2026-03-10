@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam Classifier</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #F5F4F0;
+            --surface: #FFFFFF;
+            --border: #E2E0D8;
+            --text-primary: #1A1916;
+            --text-secondary: #7A7670;
+            --accent: #2A5C45;
+            --accent-light: #EAF2ED;
+            --danger: #C0392B;
+            --danger-light: #FDECEA;
+            --mono: 'DM Mono', monospace;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 580px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+
+        /* Header */
+        .card-header {
+            padding: 28px 32px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-light);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .header-text h1 {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .header-text p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .badge {
+            margin-left: auto;
+            font-family: var(--mono);
+            font-size: 10px;
+            font-weight: 500;
+            background: var(--accent-light);
+            color: var(--accent);
+            padding: 4px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Body */
+        .card-body {
+            padding: 28px 32px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            padding: 14px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            color: var(--text-primary);
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s;
+            line-height: 1.6;
+        }
+
+        textarea::placeholder { color: #BFBDB6; }
+
+        textarea:focus {
+            border-color: var(--accent);
+            background: #fff;
+        }
+
+        /* Stats row */
+        .stats-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .stat {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: var(--bg);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        /* Button */
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 16px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 0.1px;
+        }
+
+        button:hover { background: #234d3a; transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* Spinner */
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Result */
+        #result {
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+            animation: fadeUp 0.3s ease;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-inner {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .result-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .result-label {
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 3px;
+        }
+
+        .result-value {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .result-confidence {
+            margin-left: auto;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .confidence-number {
+            font-family: var(--mono);
+            font-size: 22px;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        .confidence-label {
+            font-size: 11px;
+            margin-top: 3px;
+            opacity: 0.7;
+        }
+
+        /* Confidence bar */
+        .confidence-bar-wrap {
+            padding: 0 20px 16px;
+        }
+
+        .confidence-bar-bg {
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .confidence-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        /* Spam theme */
+        .result.spam { background: var(--danger-light); border: 1px solid #F5C6C2; }
+        .result.spam .result-label { color: var(--danger); }
+        .result.spam .result-value { color: var(--danger); }
+        .result.spam .confidence-number { color: var(--danger); }
+        .result.spam .confidence-label { color: var(--danger); }
+        .result.spam .confidence-bar-fill { background: var(--danger); }
+
+        /* Ham theme */
+        .result.ham { background: var(--accent-light); border: 1px solid #C3DDD0; }
+        .result.ham .result-label { color: var(--accent); }
+        .result.ham .result-value { color: var(--accent); }
+        .result.ham .confidence-number { color: var(--accent); }
+        .result.ham .confidence-label { color: var(--accent); }
+        .result.ham .confidence-bar-fill { background: var(--accent); }
+
+        /* Footer */
+        .card-footer {
+            padding: 16px 32px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .model-info {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #4CAF50;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+
+    <!-- Header -->
+    <div class="card-header">
+        <div class="header-icon">📧</div>
+        <div class="header-text">
+            <h1>Spam Classifier</h1>
+            <p>Paste any email to detect if it's spam</p>
+        </div>
+        <span class="badge">RF MODEL</span>
+    </div>
+
+    <!-- Body -->
+    <div class="card-body">
+        <label for="emailText">Email Content</label>
+        <textarea 
+            id="emailText" 
+            placeholder="Paste your email content here..."></textarea>
+
+        <div class="stats-row">
+            <span class="stat" id="charCount">0 chars</span>
+            <span class="stat" id="wordCount">0 words</span>
+        </div>
+
+        <button onclick="checkEmail()" id="checkBtn">
+            <span id="btnText">Analyse Email</span>
+            <div class="spinner" id="spinner"></div>
+        </button>
+
+        <!-- Result -->
+        <div id="result">
+            <div class="result-inner">
+                <div class="result-icon" id="resultIcon"></div>
+                <div>
+                    <div class="result-label" id="resultLabel"></div>
+                    <div class="result-value" id="resultValue"></div>
+                </div>
+                <div class="result-confidence">
+                    <div class="confidence-number" id="confidenceNum"></div>
+                    <div class="confidence-label">confidence</div>
+                </div>
+            </div>
+            <div class="confidence-bar-wrap">
+                <div class="confidence-bar-bg">
+                    <div class="confidence-bar-fill" id="confidenceBar" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer">
+        <span class="model-info"><span class="dot"></span>API connected</span>
+        <span class="model-info">Random Forest · TF-IDF · 97.6% acc</span>
+    </div>
+
+</div>
+
+<script>
+    // Live word/char counter
+    const textarea = document.getElementById('emailText');
+    textarea.addEventListener('input', () => {
+        const text = textarea.value;
+        document.getElementById('charCount').textContent = `${text.length} chars`;
+        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        document.getElementById('wordCount').textContent = `${words} words`;
+    });
+
+    async function checkEmail() {
+        const text = document.getElementById('emailText').value.trim();
+        if (!text) { textarea.focus(); return; }
+
+        // Show loading
+        const btn = document.getElementById('checkBtn');
+        btn.disabled = true;
+        document.getElementById('btnText').textContent = 'Analysing...';
+        document.getElementById('spinner').style.display = 'block';
+        document.getElementById('result').style.display = 'none';
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+
+            const data = await response.json();
+            const isSpam = data.prediction.includes('spam');
+            const confidence = data.confidence;
+
+            // Populate result
+            const resultEl = document.getElementById('result');
+            resultEl.className = `result ${isSpam ? 'spam' : 'ham'}`;
+            document.getElementById('resultIcon').textContent = isSpam ? '🚨' : '✅';
+            document.getElementById('resultLabel').textContent = isSpam ? 'Spam Detected' : 'Looks Legitimate';
+            document.getElementById('resultValue').textContent = isSpam
+                ? 'This email is likely spam'
+                : 'This email appears to be genuine';
+            document.getElementById('confidenceNum').textContent = `${confidence}%`;
+
+            // Show result then animate bar
+            resultEl.style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('confidenceBar').style.width = `${confidence}%`;
+            }, 50);
+
+        } catch (err) {
+            const resultEl = document.getElementById('result');
+            resultEl.className = 'result spam';
+            resultEl.style.display = 'block';
+            document.getElementById('resultIcon').textContent = '⚠️';
+            document.getElementById('resultLabel').textContent = 'Connection Error';
+            document.getElementById('resultValue').textContent = 'Could not reach the API — is FastAPI running?';
+            document.getElementById('confidenceNum').textContent = '';
+        }
+
+        // Reset button
+        btn.disabled = false;
+        document.getElementById('btnText').textContent = 'Analyse Email';
+        document.getElementById('spinner').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
