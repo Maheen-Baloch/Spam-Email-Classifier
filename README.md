@@ -1,4 +1,4 @@
-# 📧 Email Spam Classifier
+# 📧 Spam Email Classifier
 
 A full stack machine learning web app that classifies emails as **spam or ham** using Natural Language Processing and a Random Forest model — served via a FastAPI backend and a clean HTML/CSS/JS frontend.
 
