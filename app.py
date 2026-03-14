@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.responses import FileResponse
 import pickle
 import re
 import nltk
@@ -48,4 +49,4 @@ def predict(email: EmailInput):
 
 @app.get('/')
 def home():
-    return {'message': 'Spam Classifier API is running! '}
+    return FileResponse('index.html')
